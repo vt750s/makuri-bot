@@ -1,0 +1,28 @@
+{
+  "name": "makuri-bot",
+  "version": "1.0.0",
+  "description": "Twitter bot for sending a direct message to users who click \"like\" onto latest tweet.",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vt750s/makuri-bot.git"
+  },
+  "keywords": [
+    "twitter",
+    "bot"
+  ],
+  "author": "vt750s",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vt750s/makuri-bot/issues"
+  },
+  "homepage": "https://github.com/vt750s/makuri-bot#readme",
+  "dependencies": {
+    "twitter-lite": "^1.1.0",
+    "winston": "^2.4.5"
+  }
+}
