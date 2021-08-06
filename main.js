@@ -24,10 +24,11 @@ const clientV2 = new Twitter({ // for the other APIs
   access_token_secret: ACCESS_TOKEN_SECRET
 });
 
-var receivedUserSet = new Set();
+var invitedUserSet = new Set();
+var errorUserSet = new Set();
 var targetTweetId = undefined;
 
-async function sendDM(recipient_id) {
+async function sendInvitationByDm(recipient_id) {
   let msg = fs.readFileSync('./message.txt');
   await clientV1.post("direct_messages/events/new", {
     event: {
@@ -39,6 +40,15 @@ async function sendDM(recipient_id) {
         }
       }
     }
+  });
+}
+
+async function sendErrorByTweet(parentTweetId, username) {
+  let tweet = fs.readFileSync('./tweet.txt');
+  await clientV1.post("statuses/update", {
+    status: '@' + username + ' ' + tweet,
+    in_reply_to_status_id: parentTweetId,
+    auto_populate_reply_metadata: false
   });
 }
 
@@ -57,15 +67,25 @@ async function monitorLike() {
     return;
   }
   for (let user of users.data) {
-    if (receivedUserSet.has(user.id)) { // skip user who has already received DM
+    if (invitedUserSet.has(user.id)) { // skip user who has already received DM
       continue;
     }
     try {
-      await sendDM(user.id);
-      receivedUserSet.add(user.id);
-      winston.info('Success to send DM for user: ' + JSON.stringify(user));
+      await sendInvitationByDm(user.id);
+      invitedUserSet.add(user.id);
+      winston.info('Success to invite user: ' + JSON.stringify(user));
     } catch (e) {
-      winston.warn('Failed to send DM for user: ' + JSON.stringify(user));
+      winston.warn('Failed to invite user: ' + JSON.stringify(user));
+      if (errorUserSet.has(user.id)) {
+        return;
+      }
+      errorUserSet.add(user.id);
+      try {
+        await sendErrorByTweet(targetTweetId, user.username);
+        winston.info('Success to send ERROR reply for user: ' + JSON.stringify(user));
+      } catch (e2) {
+        winston.warn('Failed to send ERROR reply for user: ' + JSON.stringify(user));
+      }
     }
   }
 }
