@@ -77,7 +77,7 @@ async function monitorLike() {
     } catch (e) {
       winston.warn('Failed to invite user: ' + JSON.stringify(user));
       if (errorUserSet.has(user.id)) {
-        return;
+        continue;
       }
       errorUserSet.add(user.id);
       try {
