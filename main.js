@@ -1,5 +1,7 @@
 const Twitter = require('twitter-lite');
-const winston = require('winston');
+const log4js = require('log4js')
+const logger = log4js.getLogger();
+logger.level = 'info';
 const fs = require('fs');
 
 const USERNAME = process.env.MB_USERNAME;
@@ -58,7 +60,7 @@ async function monitorLike() {
     let myUser = await clientV2.get("users/by/username/" + USERNAME);
     let myUserId = myUser.data.id;
     let myTweets = await clientV2.get("users/" + myUserId + "/tweets?max_results=5");
-    winston.info('Target tweet is ' + JSON.stringify(myTweets.data[0]));
+    logger.info('Target tweet is ' + JSON.stringify(myTweets.data[0]));
     targetTweetId = myTweets.data[0].id;
   }
   // get liking users of target tweet
@@ -73,18 +75,18 @@ async function monitorLike() {
     try {
       await sendInvitationByDm(user.id);
       invitedUserSet.add(user.id);
-      winston.info('Success to invite user: ' + JSON.stringify(user));
+      logger.info('Success to invite user: ' + JSON.stringify(user));
     } catch (e) {
-      winston.warn('Failed to invite user: ' + JSON.stringify(user));
+      logger.warn('Failed to invite user: ' + JSON.stringify(user));
       if (errorUserSet.has(user.id)) {
         continue;
       }
       errorUserSet.add(user.id);
       try {
         await sendErrorByTweet(targetTweetId, user.username);
-        winston.info('Success to send ERROR reply for user: ' + JSON.stringify(user));
+        logger.info('Success to send ERROR reply for user: ' + JSON.stringify(user));
       } catch (e2) {
-        winston.warn('Failed to send ERROR reply for user: ' + JSON.stringify(user));
+        logger.warn('Failed to send ERROR reply for user: ' + JSON.stringify(user));
       }
     }
   }
