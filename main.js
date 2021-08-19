@@ -46,9 +46,18 @@ async function sendInvitationByDm(recipient_id) {
 }
 
 async function sendErrorByTweet(parentTweetId, username) {
-  let tweet = fs.readFileSync('./tweet.txt');
+  let tweet = fs.readFileSync('./tweet_error.txt');
+  await sendTweet(parentTweetId, '@' + username + ' ' + tweet);
+}
+
+async function sendSuccessByTweet(parentTweetId, username) {
+  let tweet = fs.readFileSync('./tweet_success.txt');
+  await sendTweet(parentTweetId, '@' + username + ' ' + tweet);
+}
+
+async function sendTweet(parentTweetId, tweet) {
   await clientV1.post("statuses/update", {
-    status: '@' + username + ' ' + tweet,
+    status: tweet,
     in_reply_to_status_id: parentTweetId,
     auto_populate_reply_metadata: false
   });
@@ -74,6 +83,7 @@ async function monitorLike() {
     }
     try {
       await sendInvitationByDm(user.id);
+      await sendSuccessByTweet(targetTweetId, user.username);
       invitedUserSet.add(user.id);
       logger.info('Success to invite user: ' + JSON.stringify(user));
     } catch (e) {
