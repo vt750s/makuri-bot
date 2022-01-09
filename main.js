@@ -68,9 +68,14 @@ async function monitorLike() {
   if (targetTweetId === undefined) {
     let myUser = await clientV2.get("users/by/username/" + USERNAME);
     let myUserId = myUser.data.id;
-    let myTweets = await clientV2.get("users/" + myUserId + "/tweets?max_results=5");
-    logger.info('Target tweet is ' + JSON.stringify(myTweets.data[0]));
-    targetTweetId = myTweets.data[0].id;
+    let myTweets = await clientV2.get("users/" + myUserId + "/tweets?max_results=100&tweet.fields=created_at,in_reply_to_user_id");
+    for (let tweet of myTweets.data) {
+      if (tweet.hasOwnProperty('in_reply_to_user_id') === false) {
+        logger.info('Target tweet is ' + JSON.stringify(tweet));
+        targetTweetId = tweet.id;
+        break;
+      }
+    }
   }
   // get liking users of target tweet
   let users = await clientV2.get("tweets/" + targetTweetId + "/liking_users");
@@ -83,7 +88,7 @@ async function monitorLike() {
     }
     try {
       await sendInvitationByDm(user.id);
-      await sendSuccessByTweet(targetTweetId, user.username);
+      // await sendSuccessByTweet(targetTweetId, user.username);
       invitedUserSet.add(user.id);
       logger.info('Success to invite user: ' + JSON.stringify(user));
     } catch (e) {
